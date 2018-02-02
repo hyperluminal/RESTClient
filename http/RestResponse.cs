@@ -7,6 +7,8 @@ namespace RESTClient {
   public abstract class Response {
     public bool IsError { get; set; }
 
+	public bool IsCached { get; set; }
+
     public string ErrorMessage { get; set; }
 
     public string Url { get; set; }
@@ -17,24 +19,27 @@ namespace RESTClient {
 
     protected Response(HttpStatusCode statusCode) {
       this.StatusCode = statusCode;
-      this.IsError = !((int)statusCode >= 200 && (int)statusCode < 300);
-    }
+      this.IsCached = (int) statusCode == 0;
+      this.IsError = !IsCached && !((int)statusCode >= 200 && (int)statusCode < 300);
+	}
 
     // success
     protected Response(HttpStatusCode statusCode, string url, string text) {
+      this.StatusCode = statusCode;
+      this.IsCached = (int)statusCode == 0;
       this.IsError = false;
       this.Url = url;
       this.ErrorMessage = null;
-      this.StatusCode = statusCode;
       this.Content = text;
     }
 
     // failure
     protected Response(string error, HttpStatusCode statusCode, string url, string text) {
-      this.IsError = true;
+      this.StatusCode = statusCode;
+      this.IsCached = (int)statusCode == 0;
+      this.IsError = !IsCached && !((int)statusCode >= 200 && (int)statusCode < 300);
       this.Url = url;
       this.ErrorMessage = error;
-      this.StatusCode = statusCode;
       this.Content = text;
     }
   }
